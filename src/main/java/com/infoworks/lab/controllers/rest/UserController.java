@@ -48,10 +48,10 @@ public class UserController implements RestRepository<User, String> {
     }
 
     @PutMapping
-    public User update(@Valid @RequestBody User user
-            , @ApiIgnore @RequestParam(value = "name", required = false) String name){
-        dataSource.replace(user.getName(), user);
-        return user;
+    public User update(@Valid @RequestBody User user, @RequestParam(value = "name") String name){
+        User updated = dataSource.replace(name, user);
+        if (updated == null) throw new RuntimeException( name + " not found!" );
+        else return updated;
     }
 
     @DeleteMapping
