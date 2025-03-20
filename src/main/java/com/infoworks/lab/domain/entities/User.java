@@ -2,7 +2,6 @@ package com.infoworks.lab.domain.entities;
 
 import com.infoworks.lab.domain.validation.constraint.Gender.IsValidGender;
 import com.infoworks.lab.rest.validation.Email.EmailPattern;
-import com.it.soul.lab.sql.entity.Ignore;
 import com.it.soul.lab.sql.entity.PrimaryKey;
 import com.it.soul.lab.sql.entity.TableName;
 import org.springframework.data.annotation.Id;
@@ -19,8 +18,7 @@ import java.util.Objects;
 @Document(indexName = "users")
 public class User extends Auditable<Integer, Long> {
 
-	@PrimaryKey(name="id", auto=true)
-	@Id
+	@Id @PrimaryKey(name="id", auto=true)
 	private Integer id;
 
     @NotNull(message = "name must not be null.")
@@ -38,22 +36,16 @@ public class User extends Auditable<Integer, Long> {
 
 
 	//@NotNull(message = "dob Must Not Null")
-	//@Past(message = "Date Of Birth Must Be Greater Then Now")
+	//@Past(message = "Date Of Birth Must Be Greater than Now")
     private Date dob = new java.sql.Date(new Date().getTime());
 
 	private boolean active;
 
-	@Ignore
-	private static int _autoIncrement = -1;
-
-	public User() {
-	    this.id = ++_autoIncrement;
-    }
+	public User() { /**/ }
 
     public User(@NotNull(message = "Name must not be null") String name
             , Gender sex
             , @Min(value = 18, message = "Min Value is 18.") int age) {
-        this();
 	    this.name = name;
         this.sex = sex.name();
         this.age = age;

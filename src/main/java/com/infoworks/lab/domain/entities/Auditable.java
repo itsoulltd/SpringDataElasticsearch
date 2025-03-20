@@ -3,26 +3,28 @@ package com.infoworks.lab.domain.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.it.soul.lab.sql.entity.Entity;
 import org.springframework.data.annotation.*;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Map;
 
 public class Auditable<ID, VERSION> extends Entity implements Externalizable {
 
-    @CreatedDate //@Field(name = "created_date", type = FieldType.Date)
-    LocalDateTime createdDate;
+    @CreatedDate @Field(name = "created_date", type = FieldType.Date)
+    LocalDate createdDate;
 
-    @LastModifiedDate //@Field(name = "last_modified_date", type = FieldType.Date)
-    LocalDateTime lastModifiedDate;
+    @LastModifiedDate @Field(name = "last_modified_date", type = FieldType.Date)
+    LocalDate lastModifiedDate;
 
-    @CreatedBy //@Field(name = "created_by", type = FieldType.Object)
+    @CreatedBy @Field(name = "created_by", type = FieldType.Object)
     Username createdBy;
 
-    @LastModifiedBy //@Field(name = "last_modified_by", type = FieldType.Object)
+    @LastModifiedBy @Field(name = "last_modified_by", type = FieldType.Object)
     Username lastModifiedBy;
 
     @Version @JsonIgnore
