@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service("userService")
 public class UserService extends SimpleDataSource<String, User> {
@@ -37,15 +38,23 @@ public class UserService extends SimpleDataSource<String, User> {
 
     @Override
     public void put(String key, User user) {
+        this.add(user);
+    }
+
+    @Override
+    public String add(User user) {
+        String key = Optional.ofNullable(user.getId()).orElse(-1).toString();
         repository.save(user);
+        return key;
     }
 
     @Override
     public User replace(String key, User user) {
-        User existing = read(key);
+        User existing = repository.findById(Integer.valueOf(key)).orElse(null);
         if (existing != null && user != null) {
             user.setId(existing.getId());
             existing.unmarshallingFromMap(user.marshallingToMap(true), true);
+            existing.setVersion(existing.getVersion() + 1);
             repository.save(existing);
         }
         return existing;
@@ -53,7 +62,7 @@ public class UserService extends SimpleDataSource<String, User> {
 
     @Override
     public User remove(String key) {
-        User existing = read(key);
+        User existing = repository.findById(Integer.valueOf(key)).orElse(null);
         if (existing != null) {
             repository.deleteById(existing.getId());
         }

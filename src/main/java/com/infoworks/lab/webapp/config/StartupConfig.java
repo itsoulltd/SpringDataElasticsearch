@@ -17,6 +17,7 @@ public class StartupConfig implements CommandLineRunner {
     public void run(String... args) throws Exception {
         //How to use executor:
         System.out.println(String.format("http://localhost:%s/swagger-ui/index.html", serverPort));
+        System.out.println(String.format("http://localhost:%s/swagger-ui.html", serverPort));
         //
     }
 

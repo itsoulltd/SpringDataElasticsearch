@@ -43,20 +43,22 @@ public class UserController implements RestRepository<User, String> {
 
     @PostMapping
     public User insert(@Valid @RequestBody User user){
-        dataSource.put(user.getName(), user);
+        String key = dataSource.add(user);
         return user;
     }
 
     @PutMapping
-    public User update(@Valid @RequestBody User user, @RequestParam(value = "name") String name){
-        User updated = dataSource.replace(name, user);
-        if (updated == null) throw new RuntimeException( name + " not found!" );
+    public User update(@Valid @RequestBody User user
+            , @ApiIgnore @RequestParam(value = "id", required = false) String id){
+        id = user.getId().toString();
+        User updated = dataSource.replace(id, user);
+        if (updated == null) throw new RuntimeException( id + " not found!" );
         else return updated;
     }
 
     @DeleteMapping
-    public boolean delete(@RequestParam("name") String name){
-        User deleted = dataSource.remove(name);
+    public boolean delete(@RequestParam("id") String id){
+        User deleted = dataSource.remove(id);
         return deleted != null;
     }
 
