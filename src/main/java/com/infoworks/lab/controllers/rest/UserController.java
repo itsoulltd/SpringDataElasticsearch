@@ -43,6 +43,8 @@ public class UserController implements RestRepository<User, String> {
 
     @PostMapping
     public User insert(@Valid @RequestBody User user){
+        if (user.getId() == null || user.getId() <= 0)
+            user.setId(dataSource.size() + 1);
         String key = dataSource.add(user);
         return user;
     }
