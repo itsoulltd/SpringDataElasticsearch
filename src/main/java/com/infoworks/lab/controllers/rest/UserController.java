@@ -2,8 +2,9 @@ package com.infoworks.lab.controllers.rest;
 
 import com.infoworks.lab.domain.entities.User;
 import com.infoworks.lab.rest.models.ItemCount;
+import com.infoworks.lab.rest.models.SearchQuery;
 import com.infoworks.lab.rest.repository.RestRepository;
-import com.it.soul.lab.data.base.DataSource;
+import com.infoworks.lab.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
@@ -17,17 +18,17 @@ import java.util.List;
 @RequestMapping("/user")
 public class UserController implements RestRepository<User, String> {
 
-    private DataSource<String, User> dataSource;
+    private UserService userService;
 
     @Autowired
-    public UserController(@Qualifier("userService") DataSource<String, User> dataSource) {
-        this.dataSource = dataSource;
+    public UserController(@Qualifier("userService") UserService userService) {
+        this.userService = userService;
     }
 
     @GetMapping("/rowCount")
     public ItemCount rowCount(){
         ItemCount count = new ItemCount();
-        count.setCount(Integer.valueOf(dataSource.size()).longValue());
+        count.setCount(Integer.valueOf(userService.size()).longValue());
         return count;
     }
 
@@ -37,15 +38,15 @@ public class UserController implements RestRepository<User, String> {
             , @RequestParam(value = "page", defaultValue = "0", required = false) Integer page){
         if (limit < 0) limit = 10;
         if (page < 0) page = 0;
-        List<User> users = Arrays.asList(dataSource.readSync(page, limit));
+        List<User> users = Arrays.asList(userService.readSync(page, limit));
         return users;
     }
 
     @PostMapping
     public User insert(@Valid @RequestBody User user){
         if (user.getId() == null || user.getId() <= 0)
-            user.setId(dataSource.size() + 1);
-        String key = dataSource.add(user);
+            user.setId(userService.size() + 1);
+        String key = userService.add(user);
         return user;
     }
 
@@ -53,15 +54,21 @@ public class UserController implements RestRepository<User, String> {
     public User update(@Valid @RequestBody User user
             , @ApiIgnore @RequestParam(value = "id", required = false) String id){
         id = user.getId().toString();
-        User updated = dataSource.replace(id, user);
+        User updated = userService.replace(id, user);
         if (updated == null) throw new RuntimeException( id + " not found!" );
         else return updated;
     }
 
     @DeleteMapping
     public boolean delete(@RequestParam("id") String id){
-        User deleted = dataSource.remove(id);
+        User deleted = userService.remove(id);
         return deleted != null;
+    }
+
+    @PostMapping("/search")
+    public List<User> search(@RequestBody SearchQuery searchQuery) {
+        List<User> result = userService.search(searchQuery);
+        return result;
     }
 
     @Override

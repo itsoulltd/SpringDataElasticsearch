@@ -2,6 +2,7 @@ package com.infoworks.lab.services;
 
 import com.infoworks.lab.domain.entities.User;
 import com.infoworks.lab.domain.repositories.UserRepository;
+import com.infoworks.lab.rest.models.SearchQuery;
 import com.it.soul.lab.data.simple.SimpleDataSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -67,5 +68,9 @@ public class UserService extends SimpleDataSource<String, User> {
             repository.deleteById(existing.getId());
         }
         return existing;
+    }
+
+    public List<User> search(SearchQuery searchQuery) {
+        return repository.search(searchQuery, User.class);
     }
 }
