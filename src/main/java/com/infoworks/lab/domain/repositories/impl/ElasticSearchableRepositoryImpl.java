@@ -3,6 +3,8 @@ package com.infoworks.lab.domain.repositories.impl;
 import com.infoworks.lab.domain.repositories.ElasticSearchableRepository;
 import com.infoworks.lab.rest.models.SearchQuery;
 import com.infoworks.lab.rest.models.pagination.SortOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
@@ -19,6 +21,7 @@ import java.util.List;
 @Repository
 public class ElasticSearchableRepositoryImpl<T, ID> implements ElasticSearchableRepository<T, ID> {
 
+    private static Logger LOG = LoggerFactory.getLogger("ElasticSearchableRepositoryImpl");
     private ElasticsearchOperations template;
 
     public ElasticSearchableRepositoryImpl(ElasticsearchOperations template) {
@@ -30,10 +33,12 @@ public class ElasticSearchableRepositoryImpl<T, ID> implements ElasticSearchable
         List<Criteria> criteriaList = getCriteriaList(query);
         //If-Query-Is-Empty: return empty list;
         if (criteriaList.isEmpty()) return new ArrayList<>();
-        //
+        //Creating criteria chain from the list:
         Criteria searchCriteria = new Criteria();
-        //FIXME: not working
-        criteriaList.forEach(criteria -> searchCriteria.or(criteria));
+        for (Criteria criteria : criteriaList) {
+            searchCriteria = searchCriteria.or(criteria);
+        }
+        //Now create CriteriaQuery from criteria-chain:
         Query mQuery = new CriteriaQuery(searchCriteria);
         if (!query.getDescriptors().isEmpty()){
             query.getDescriptors().stream()
@@ -46,8 +51,7 @@ public class ElasticSearchableRepositoryImpl<T, ID> implements ElasticSearchable
                         );
                     });
         }
-        //If-Query-Is-Empty: return empty list;
-        if (mQuery.getFields().isEmpty()) return new ArrayList<>();
+        //
         int page = query.getPage();
         int size = query.getSize();
         if (page < 0) page = 0;
