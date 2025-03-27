@@ -6,8 +6,15 @@ import com.infoworks.lab.rest.models.SearchQuery;
 import com.it.soul.lab.data.simple.SimpleDataSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHitSupport;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.query.Criteria;
+import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
+import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,9 +22,11 @@ import java.util.Optional;
 public class UserService extends SimpleDataSource<String, User> {
 
     private UserRepository repository;
+    private ElasticsearchOperations template;
 
-    public UserService(UserRepository repository) {
+    public UserService(UserRepository repository, ElasticsearchOperations template) {
         this.repository = repository;
+        this.template = template;
     }
 
     @Override
@@ -72,5 +81,24 @@ public class UserService extends SimpleDataSource<String, User> {
 
     public List<User> search(SearchQuery searchQuery) {
         return repository.search(searchQuery, User.class);
+    }
+
+    public List<User> inclusiveSearch(SearchQuery searchQuery) {
+        List<Criteria> criteriaList = repository.getCriteriaList(searchQuery);
+        //If-Query-Is-Empty: return empty list;
+        if (criteriaList.isEmpty()) return new ArrayList<>();
+        //Creating criteria chain from the list:
+        Criteria searchCriteria = new Criteria();
+        for (Criteria criteria : criteriaList) {
+            searchCriteria = searchCriteria.and(criteria);
+        }
+        //Now create CriteriaQuery from criteria-chain:
+        Query mQuery = new CriteriaQuery(searchCriteria);
+        repository.addSort(mQuery, searchQuery);
+        repository.setPageable(mQuery, searchQuery);
+        SearchHits<User> iterable = template.search(mQuery, User.class);
+        @SuppressWarnings("unchecked")
+        List<User> items = (List<User>) SearchHitSupport.unwrapSearchHits(iterable);
+        return items;
     }
 }

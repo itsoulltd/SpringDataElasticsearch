@@ -1,7 +1,11 @@
 package com.infoworks.lab.domain.repositories;
 
 import com.infoworks.lab.rest.models.SearchQuery;
+import com.infoworks.lab.rest.models.pagination.SortOrder;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.query.Criteria;
+import org.springframework.data.elasticsearch.core.query.Query;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,5 +52,29 @@ public interface ElasticSearchableRepository<T, ID> {
                     }
                 });
         return criteriaList;
+    }
+
+    default Query addSort(Query mQuery, SearchQuery query) {
+        if (!query.getDescriptors().isEmpty()){
+            query.getDescriptors().stream()
+                    .filter(descriptor -> descriptor.getKeys().size() > 0)
+                    .forEach(descriptor -> {
+                        Sort.Direction direction = (descriptor.getOrder() == SortOrder.ASC)
+                                ? Sort.Direction.ASC
+                                : Sort.Direction.DESC;
+                        mQuery.addSort(Sort.by(direction, descriptor.getKeys().toArray(new String[0]))
+                        );
+                    });
+        }
+        return mQuery;
+    }
+
+    default Query setPageable(Query mQuery, SearchQuery query) {
+        int page = query.getPage();
+        int size = query.getSize();
+        if (page < 0) page = 0;
+        if (size <= 0) size = 10;
+        mQuery.setPageable(PageRequest.of(page, size));
+        return mQuery;
     }
 }

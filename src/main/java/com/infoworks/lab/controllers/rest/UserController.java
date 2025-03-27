@@ -71,6 +71,12 @@ public class UserController implements RestRepository<User, String> {
         return result;
     }
 
+    @PostMapping("/search/v2")
+    public List<User> searchV2(@RequestBody SearchQuery searchQuery) {
+        List<User> result = userService.inclusiveSearch(searchQuery);
+        return result;
+    }
+
     @Override
     public String getPrimaryKeyName() {
         return "id";

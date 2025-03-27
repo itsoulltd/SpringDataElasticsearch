@@ -2,11 +2,8 @@ package com.infoworks.lab.domain.repositories.impl;
 
 import com.infoworks.lab.domain.repositories.ElasticSearchableRepository;
 import com.infoworks.lab.rest.models.SearchQuery;
-import com.infoworks.lab.rest.models.pagination.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHitSupport;
 import org.springframework.data.elasticsearch.core.SearchHits;
@@ -40,23 +37,8 @@ public class ElasticSearchableRepositoryImpl<T, ID> implements ElasticSearchable
         }
         //Now create CriteriaQuery from criteria-chain:
         Query mQuery = new CriteriaQuery(searchCriteria);
-        if (!query.getDescriptors().isEmpty()){
-            query.getDescriptors().stream()
-                    .filter(descriptor -> descriptor.getKeys().size() > 0)
-                    .forEach(descriptor -> {
-                        Sort.Direction direction = (descriptor.getOrder() == SortOrder.ASC)
-                                ? Sort.Direction.ASC
-                                : Sort.Direction.DESC;
-                        mQuery.addSort(Sort.by(direction, descriptor.getKeys().toArray(new String[0]))
-                        );
-                    });
-        }
-        //
-        int page = query.getPage();
-        int size = query.getSize();
-        if (page < 0) page = 0;
-        if (size <= 0) size = 10;
-        mQuery.setPageable(PageRequest.of(page, size));
+        addSort(mQuery, query);
+        setPageable(mQuery, query);
         SearchHits<T> iterable = template.search(mQuery, type);
         //SearchPage<T> pages = SearchHitSupport.searchPageFor(iterable, mQuery.getPageable());
         @SuppressWarnings("unchecked")
