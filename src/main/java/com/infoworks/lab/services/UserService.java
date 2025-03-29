@@ -1,6 +1,7 @@
 package com.infoworks.lab.services;
 
 import com.infoworks.lab.domain.entities.User;
+import com.infoworks.lab.domain.repositories.ElasticSearchableRepository;
 import com.infoworks.lab.domain.repositories.UserRepository;
 import com.infoworks.lab.rest.models.SearchQuery;
 import com.it.soul.lab.data.simple.SimpleDataSource;
@@ -84,7 +85,7 @@ public class UserService extends SimpleDataSource<String, User> {
     }
 
     public List<User> inclusiveSearch(SearchQuery searchQuery) {
-        List<Criteria> criteriaList = repository.getCriteriaList(searchQuery);
+        List<Criteria> criteriaList = ElasticSearchableRepository.getCriteriaList(searchQuery);
         //If-Query-Is-Empty: return empty list;
         if (criteriaList.isEmpty()) return new ArrayList<>();
         //Creating criteria chain from the list:
@@ -94,8 +95,8 @@ public class UserService extends SimpleDataSource<String, User> {
         }
         //Now create CriteriaQuery from criteria-chain:
         Query mQuery = new CriteriaQuery(searchCriteria);
-        repository.addSort(mQuery, searchQuery);
-        repository.setPageable(mQuery, searchQuery);
+        ElasticSearchableRepository.addSort(mQuery, searchQuery);
+        ElasticSearchableRepository.setPageable(mQuery, searchQuery);
         SearchHits<User> iterable = template.search(mQuery, User.class);
         @SuppressWarnings("unchecked")
         List<User> items = (List<User>) SearchHitSupport.unwrapSearchHits(iterable);

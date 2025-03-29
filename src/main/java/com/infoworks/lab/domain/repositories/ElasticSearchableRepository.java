@@ -15,7 +15,7 @@ public interface ElasticSearchableRepository<T, ID> {
 
     List<T> search(SearchQuery query, Class<T> type);
 
-    default List<Criteria> getCriteriaList(SearchQuery query, String...skipKeys) {
+    static List<Criteria> getCriteriaList(SearchQuery query, String...skipKeys) {
         List<Criteria> criteriaList = new ArrayList<>();
         List<String> skipList = Arrays.asList(skipKeys);
         query.getProperties().stream()
@@ -54,7 +54,7 @@ public interface ElasticSearchableRepository<T, ID> {
         return criteriaList;
     }
 
-    default Query addSort(Query mQuery, SearchQuery query) {
+    static Query addSort(Query mQuery, SearchQuery query) {
         if (!query.getDescriptors().isEmpty()){
             query.getDescriptors().stream()
                     .filter(descriptor -> descriptor.getKeys().size() > 0)
@@ -69,7 +69,7 @@ public interface ElasticSearchableRepository<T, ID> {
         return mQuery;
     }
 
-    default Query setPageable(Query mQuery, SearchQuery query) {
+    static Query setPageable(Query mQuery, SearchQuery query) {
         int page = query.getPage();
         int size = query.getSize();
         if (page < 0) page = 0;

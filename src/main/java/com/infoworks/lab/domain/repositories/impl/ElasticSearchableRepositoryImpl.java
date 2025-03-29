@@ -27,7 +27,7 @@ public class ElasticSearchableRepositoryImpl<T, ID> implements ElasticSearchable
 
     @Override
     public List<T> search(SearchQuery query, Class<T> type) {
-        List<Criteria> criteriaList = getCriteriaList(query);
+        List<Criteria> criteriaList = ElasticSearchableRepository.getCriteriaList(query);
         //If-Query-Is-Empty: return empty list;
         if (criteriaList.isEmpty()) return new ArrayList<>();
         //Creating criteria chain from the list:
@@ -37,8 +37,8 @@ public class ElasticSearchableRepositoryImpl<T, ID> implements ElasticSearchable
         }
         //Now create CriteriaQuery from criteria-chain:
         Query mQuery = new CriteriaQuery(searchCriteria);
-        addSort(mQuery, query);
-        setPageable(mQuery, query);
+        ElasticSearchableRepository.addSort(mQuery, query);
+        ElasticSearchableRepository.setPageable(mQuery, query);
         SearchHits<T> iterable = template.search(mQuery, type);
         //SearchPage<T> pages = SearchHitSupport.searchPageFor(iterable, mQuery.getPageable());
         @SuppressWarnings("unchecked")
