@@ -15,6 +15,7 @@ services:
     ports:
       - 9200:9200
     environment:
+      - cluster.name=docker-cluster
       - discovery.type=single-node
       - xpack.security.enabled=false
     volumes:
