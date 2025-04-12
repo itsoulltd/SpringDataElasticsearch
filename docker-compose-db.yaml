@@ -1,35 +1,37 @@
 version: '3.5'
 
 networks:
-   web-app-net:
-       name: my-web-app-net
-       #driver: overlay
-       driver: bridge
+  web-app-net:
+    name: my-web-app-net
+    #driver: overlay
+    driver: bridge
 
 volumes:
-   mysql-db-storage:
+  elastic-storage:
 
 services:
-   mysql-db:
-      image: mysql:8.0.13
-      environment:
-          MYSQL_DATABASE: testDB
-          MYSQL_ROOT_PASSWORD: root@123
-      ports:
-          - 3306:3306
-      networks:
-          - web-app-net
-      volumes:
-          - mysql-db-storage:/var/lib/mysql
+  elasticsearch:
+    image: elasticsearch:7.9.2
+    ports:
+      - 9200:9200
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    volumes:
+      - elastic-storage:/usr/share/elasticsearch/data:rw   # Persistence data
+    networks:
+      - web-app-net
 
-   adminer:
-     image: adminer:4.8.0
-     ports:
-       - 8081:8080
-     depends_on:
-       - mysql-db
-     restart: on-failure
-     networks:
-       - web-app-net
+  kibana:
+    image: kibana:7.9.2
+    ports:
+      - 5601:5601
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200     # Optional when standalone
+    restart: on-failure
+    depends_on:
+      - elasticsearch
+    networks:
+      - web-app-net
 
 ##End of Scripts
